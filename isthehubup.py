@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import urllib
+import yaml
 
 from functools import partial
 
