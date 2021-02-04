@@ -294,40 +294,26 @@ async def main(once=False):
                 Gitter("jupyterhub/mybinder.org-deploy"),
             ],
         ),
-        BinderBuilds(
-            "gh/binder-examples/requirements/master",
-            [
-                Email("betatim@gmail.com"),
-                Gitter("jupyterhub/mybinder.org-deploy"),
-            ],
-            host="https://gke.mybinder.org",
-        ),
-        BinderBuilds(
-            "gh/binder-examples/requirements/master",
-            [
-                # Email("betatim@gmail.com"),
-                # Gitter("jupyterhub/mybinder.org-deploy"),
-            ],
-            host="https://ovh.mybinder.org",
-        ),
-        BinderBuilds(
-            "gh/binder-examples/requirements/master",
-            [
-                Email("betatim@gmail.com"),
-                Gitter("jupyterhub/mybinder.org-deploy"),
-            ],
-            host="https://gesis.mybinder.org",
-        ),
-#         BinderBuilds(
-#             "gh/binder-examples/requirements/master",
-#             [
-#                 Email("betatim@gmail.com"),
-#                 Gitter("jupyterhub/mybinder.org-deploy"),
-#             ],
-#             host="https://turing.mybinder.org",
-#         ),
-        # IsUp("https://httpbin.org/status/504", [Email("betatim@gmail.com")]),
     ]
+    
+    # fetch all the active memebers in the federation
+    config_url = "https://raw.githubusercontent.com/jupyterhub/mybinder.org-deploy/master/mybinder/values.yaml"
+    active_members = yaml.load(
+        urllib.request.urlopen(config_url).read(), Loader=yaml.SafeLoader
+    )["federationRedirect"]["hosts"]
+    
+    for member in active_members:
+        if active_members[member]["weight"] > 0:
+            checks.append(
+                BinderBuilds(
+                    "gh/binder-examples/requirements/master",
+                    [
+                        Email("betatim@gmail.com"),
+                        Gitter("jupyterhub/mybinder.org-deploy"),
+                    ],
+                    host=active_members[member]["url"],
+                )
+            )
 
     signals = []
     for check in checks:
